@@ -60,7 +60,7 @@ using namespace dimmer;
 #define MENU_ID_5500K (MENU_ID_MONITOR_USER + 4)
 #define MENU_ID_6000K (MENU_ID_MONITOR_USER + 5)
 
-constexpr wchar_t version[]     = L"v0.3";
+constexpr wchar_t version[]     = L"v0.4";
 constexpr wchar_t className[]   = L"DimmerTrayMenuClass";
 constexpr wchar_t windowTitle[] = L"DimmerTrayMenuWindow";
 constexpr int offscreen         = -32000;
