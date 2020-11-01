@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (c) 2007-2017 Casey Langen
+// Copyright (c) 2007-2017 Casey Langen && 2020 MenosGrandes
 //
 // All rights reserved.
 //
@@ -36,47 +36,33 @@
 
 #include "Monitor.h"
 
-#include <Shellapi.h>
 #include <Windows.h>
-#include <functional>
 
 namespace dimmer
 {
-  class TrayMenu
+  class Overlay
   {
-    using MonitorsChanged  = std::function<void()>;
-    using PopupMenuChanged = std::function<void(bool)>;
-
   public:
-    TrayMenu(HINSTANCE instance, MonitorsChanged callback);
-    ~TrayMenu();
+    Overlay(HINSTANCE instance, Monitor monitor);
+    ~Overlay();
 
-    void setPopupMenuChangedCallback(PopupMenuChanged callback);
+    void update(Monitor &monitor);
+    void startTimer();
+    void killTimer();
 
   private:
-    enum
-    {
-      MiddleDown      = 1,
-      MiddleProcessed = 2
-    };
-
-    void initIcon();
-
-    void notify()
-    {
-      if (monitorsChanged)
-        {
-          monitorsChanged();
-        }
-    }
-
     static LRESULT CALLBACK windowProc(
         HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
+    void disableColorTemperature();
+    void updateColorTemperature();
+    void disableBrigthnessOverlay();
+    void updateBrightnessOverlay();
+
+    Monitor monitor;
+    HINSTANCE instance;
+    HBRUSH bgBrush;
+    UINT_PTR timerId;
     HWND hwnd;
-    int middleFlags;
-    NOTIFYICONDATA iconData;
-    MonitorsChanged monitorsChanged;
-    PopupMenuChanged popupMenuChanged;
   };
 } // namespace dimmer

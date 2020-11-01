@@ -78,25 +78,25 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Util.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="Monitor.cpp" />
-    <ClCompile Include="Overlay.cpp" />
-    <ClCompile Include="TrayMenu.cpp" />
+    <ClCompile Include="src\Util.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Monitor.cpp" />
+    <ClCompile Include="src\Overlay.cpp" />
+    <ClCompile Include="src\TrayMenu.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Util.h" />
-    <ClInclude Include="json.hpp" />
-    <ClInclude Include="Monitor.h" />
-    <ClInclude Include="Overlay.h" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="TrayMenu.h" />
+    <ClInclude Include="src\Util.h" />
+    <ClInclude Include="src\json.hpp" />
+    <ClInclude Include="src\Monitor.h" />
+    <ClInclude Include="src\Overlay.h" />
+    <ClInclude Include="src\resource.h" />
+    <ClInclude Include="src\TrayMenu.h" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="dimmer.ico" />
+    <Image Include="resources\dimmer.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="dimmer.rc" />
+    <ResourceCompile Include="resources\dimmer.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

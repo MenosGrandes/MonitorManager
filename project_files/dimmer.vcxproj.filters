@@ -11,50 +11,50 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="src\main.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Overlay.cpp">
+    <ClCompile Include="src\Monitor.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="TrayMenu.cpp">
+    <ClCompile Include="src\Overlay.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Monitor.cpp">
+    <ClCompile Include="src\TrayMenu.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Util.cpp">
+    <ClCompile Include="src\Util.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Overlay.h">
+    <ClInclude Include="src\json.hpp">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="TrayMenu.h">
+    <ClInclude Include="src\Monitor.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
+    <ClInclude Include="src\Overlay.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="Monitor.h">
+    <ClInclude Include="src\resource.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="json.hpp">
+    <ClInclude Include="src\TrayMenu.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="Util.h">
+    <ClInclude Include="src\Util.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="dimmer.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="dimmer.rc">
+    <ResourceCompile Include="resources\dimmer.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="resources\dimmer.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

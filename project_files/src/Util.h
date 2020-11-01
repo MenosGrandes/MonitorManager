@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (c) 2007-2017 Casey Langen
+// Copyright (c) 2007-2017 Casey Langen && 2020 MenosGrandes
 //
 // All rights reserved.
 //
