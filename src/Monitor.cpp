@@ -33,157 +33,171 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include "Monitor.h"
+
 #include "Util.h"
-#include <map>
 #include "json.hpp"
+
+#include <map>
 
 using namespace dimmer;
 using namespace nlohmann;
 
-constexpr float DEFAULT_OPACITY = 0.3f;
+constexpr float DEFAULT_OPACITY   = 0.3f;
 constexpr int DEFAULT_TEMPERATURE = -1;
 
-struct MonitorOptions {
-    float opacity;
-    int temperature;
-    bool enabled;
+struct MonitorOptions
+{
+  float opacity;
+  int temperature;
+  bool enabled;
 
-    MonitorOptions() {
-        this->opacity = DEFAULT_OPACITY;
-        this->temperature = DEFAULT_TEMPERATURE;
-        this->enabled = true;
-    }
+  MonitorOptions()
+  {
+    this->opacity     = DEFAULT_OPACITY;
+    this->temperature = DEFAULT_TEMPERATURE;
+    this->enabled     = true;
+  }
 };
 
 static std::map<std::wstring, std::shared_ptr<MonitorOptions>> monitorOptions;
 static bool pollingEnabled = false;
-static bool globalEnabled = true;
+static bool globalEnabled  = true;
 
-static std::wstring getConfigFilename() {
-    return getDataDirectory() + L"\\config.json";
+static std::wstring getConfigFilename()
+{
+  return getDataDirectory() + L"\\config.json";
 }
 
-static BOOL CALLBACK MonitorEnumProc(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data) {
-    auto monitors = reinterpret_cast<std::vector<Monitor>*>(data);
-    int index = (int) monitors->size();
-    monitors->push_back(Monitor(monitor, index));
-    return TRUE;
+static BOOL CALLBACK MonitorEnumProc(
+    HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data)
+{
+  auto monitors = reinterpret_cast<std::vector<Monitor> *>(data);
+  int index     = (int)monitors->size();
+  monitors->push_back(Monitor(monitor, index));
+  return TRUE;
 }
 
-static MonitorOptions& options(Monitor& monitor) {
-    auto id = monitor.getId();
-    if (monitorOptions.find(id) == monitorOptions.end()) {
-        monitorOptions[id] = std::make_shared<MonitorOptions>();
+static MonitorOptions &options(Monitor &monitor)
+{
+  auto id = monitor.getId();
+  if (monitorOptions.find(id) == monitorOptions.end())
+    {
+      monitorOptions[id] = std::make_shared<MonitorOptions>();
     }
-    return *monitorOptions[id];
+  return *monitorOptions[id];
 }
 
-namespace dimmer {
-    std::vector<Monitor> queryMonitors() {
-        std::vector<Monitor> result;
+namespace dimmer
+{
+  std::vector<Monitor> queryMonitors()
+  {
+    std::vector<Monitor> result;
 
-        EnumDisplayMonitors(
-            nullptr,
-            nullptr,
-            &MonitorEnumProc,
-            reinterpret_cast<LPARAM>(&result));
+    EnumDisplayMonitors(
+        nullptr, nullptr, &MonitorEnumProc, reinterpret_cast<LPARAM>(&result));
 
-        return result;
-    }
+    return result;
+  }
 
-    float getMonitorOpacity(Monitor& monitor) {
-        return options(monitor).opacity;
-    }
+  float getMonitorOpacity(Monitor &monitor) { return options(monitor).opacity; }
 
-    void setMonitorOpacity(Monitor& monitor, float opacity) {
-        options(monitor).opacity = opacity;
+  void setMonitorOpacity(Monitor &monitor, float opacity)
+  {
+    options(monitor).opacity = opacity;
+    saveConfig();
+  }
+
+  int getMonitorTemperature(Monitor &monitor)
+  {
+    return options(monitor).temperature;
+  }
+
+  void setMonitorTemperature(Monitor &monitor, int temperature)
+  {
+    options(monitor).temperature = temperature;
+    saveConfig();
+  }
+
+  bool isPollingEnabled() { return pollingEnabled; }
+
+  void setPollingEnabled(bool enabled)
+  {
+    pollingEnabled = enabled;
+    saveConfig();
+  }
+
+  extern bool isDimmerEnabled() { return globalEnabled; }
+
+  extern void setDimmerEnabled(bool enabled)
+  {
+    if (globalEnabled != enabled)
+      {
+        globalEnabled = enabled;
         saveConfig();
-    }
+      }
+  }
 
-    int getMonitorTemperature(Monitor& monitor) {
-        return options(monitor).temperature;
-    }
+  bool isMonitorEnabled(Monitor &monitor) { return options(monitor).enabled; }
 
-    void setMonitorTemperature(Monitor& monitor, int temperature) {
-        options(monitor).temperature = temperature;
-        saveConfig();
-    }
+  void setMonitorEnabled(Monitor &monitor, bool enabled)
+  {
+    options(monitor).enabled = enabled;
+    saveConfig();
+  }
 
-    bool isPollingEnabled() {
-        return pollingEnabled;
-    }
+  void loadConfig()
+  {
+    std::string config = fileToString(getConfigFilename());
+    try
+      {
+        json j = json::parse(config);
+        auto m = j.find("monitors");
+        if (m != j.end())
+          {
+            for (auto it = (*m).begin(); it != (*m).end(); ++it)
+              {
+                auto key     = u8to16(it.key());
+                auto value   = it.value();
+                auto options = std::make_shared<MonitorOptions>();
+                options->opacity =
+                    value.value<float>("opacity", DEFAULT_OPACITY);
+                options->temperature =
+                    value.value<int>("temperature", DEFAULT_TEMPERATURE);
+                options->enabled    = value.value<bool>("enabled", true);
+                monitorOptions[key] = options;
+              }
+          }
 
-    void setPollingEnabled(bool enabled) {
-        pollingEnabled = enabled;
-        saveConfig();
-    }
+        auto g = j.find("general");
+        if (g != j.end())
+          {
+            pollingEnabled = (*g).value("pollingEnabled", false);
+            globalEnabled  = (*g).value("globalEnabled", true);
+          }
+      }
+    catch (...)
+      {
+        /* move on... */
+      }
+  }
 
-    extern bool isDimmerEnabled() {
-        return globalEnabled;
-    }
+  void saveConfig()
+  {
+    json j  = { { "monitors", {} } };
+    json &m = j["monitors"];
 
-    extern void setDimmerEnabled(bool enabled) {
-        if (globalEnabled != enabled) {
-            globalEnabled = enabled;
-            saveConfig();
-        }
-    }
+    auto monitors = queryMonitors();
+    for (auto monitor : monitors)
+      {
+        m[u16to8(monitor.getId())] = { { "opacity",
+                                           getMonitorOpacity(monitor) },
+          { "temperature", getMonitorTemperature(monitor) },
+          { "enabled", isMonitorEnabled(monitor) } };
+      }
 
-    bool isMonitorEnabled(Monitor& monitor) {
-        return options(monitor).enabled;
-    }
+    j["general"] = { { "globalEnabled", globalEnabled },
+      { "pollingEnabled", pollingEnabled } };
 
-    void setMonitorEnabled(Monitor& monitor, bool enabled) {
-        options(monitor).enabled = enabled;
-        saveConfig();
-    }
-
-    void loadConfig() {
-        std::string config = fileToString(getConfigFilename());
-        try {
-            json j = json::parse(config);
-            auto m = j.find("monitors");
-            if (m != j.end()) {
-                for (auto it = (*m).begin(); it != (*m).end(); ++it) {
-                    auto key = u8to16(it.key());
-                    auto value = it.value();
-                    auto options = std::make_shared<MonitorOptions>();
-                    options->opacity = value.value<float>("opacity", DEFAULT_OPACITY);
-                    options->temperature = value.value<int>("temperature", DEFAULT_TEMPERATURE);
-                    options->enabled = value.value<bool>("enabled", true);
-                    monitorOptions[key] = options;
-                }
-            }
-
-            auto g = j.find("general");
-            if (g != j.end()) {
-                pollingEnabled = (*g).value("pollingEnabled", false);
-                globalEnabled = (*g).value("globalEnabled", true);
-            }
-        }
-        catch (...) {
-            /* move on... */
-        }
-    }
-
-    void saveConfig() {
-        json j = { { "monitors", { } } };
-        json& m = j["monitors"];
-
-        auto monitors = queryMonitors();
-        for (auto monitor : monitors) {
-            m[u16to8(monitor.getId())] = {
-                { "opacity", getMonitorOpacity(monitor) },
-                { "temperature", getMonitorTemperature(monitor) },
-                { "enabled", isMonitorEnabled(monitor) }
-            };
-        }
-
-        j["general"] = {
-            { "globalEnabled", globalEnabled },
-            { "pollingEnabled", pollingEnabled }
-        };
-
-        stringToFile(getConfigFilename(), j.dump(2));
-    }
-}
+    stringToFile(getConfigFilename(), j.dump(2));
+  }
+} // namespace dimmer

@@ -34,31 +34,35 @@
 
 #pragma once
 
-#include <Windows.h>
 #include "Monitor.h"
 
-namespace dimmer {
-    class Overlay {
-        public:
-            Overlay(HINSTANCE instance, Monitor monitor);
-            ~Overlay();
+#include <Windows.h>
 
-            void update(Monitor& monitor);
-            void startTimer();
-            void killTimer();
+namespace dimmer
+{
+  class Overlay
+  {
+  public:
+    Overlay(HINSTANCE instance, Monitor monitor);
+    ~Overlay();
 
-        private:
-            static LRESULT CALLBACK windowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+    void update(Monitor &monitor);
+    void startTimer();
+    void killTimer();
 
-            void disableColorTemperature();
-            void updateColorTemperature();
-            void disableBrigthnessOverlay();
-            void updateBrightnessOverlay();
+  private:
+    static LRESULT CALLBACK windowProc(
+        HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-            Monitor monitor;
-            HINSTANCE instance;
-            HBRUSH bgBrush;
-            UINT_PTR timerId;
-            HWND hwnd;
-    };
-}
+    void disableColorTemperature();
+    void updateColorTemperature();
+    void disableBrigthnessOverlay();
+    void updateBrightnessOverlay();
+
+    Monitor monitor;
+    HINSTANCE instance;
+    HBRUSH bgBrush;
+    UINT_PTR timerId;
+    HWND hwnd;
+  };
+} // namespace dimmer

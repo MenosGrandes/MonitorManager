@@ -35,42 +35,48 @@
 #pragma once
 
 #include "Monitor.h"
-#include <functional>
-#include <Windows.h>
+
 #include <Shellapi.h>
+#include <Windows.h>
+#include <functional>
 
-namespace dimmer {
-    class TrayMenu {
-        using MonitorsChanged = std::function<void()>;
-        using PopupMenuChanged = std::function<void(bool)>;
+namespace dimmer
+{
+  class TrayMenu
+  {
+    using MonitorsChanged  = std::function<void()>;
+    using PopupMenuChanged = std::function<void(bool)>;
 
-        public:
-            TrayMenu(HINSTANCE instance, MonitorsChanged callback);
-            ~TrayMenu();
+  public:
+    TrayMenu(HINSTANCE instance, MonitorsChanged callback);
+    ~TrayMenu();
 
-            void setPopupMenuChangedCallback(PopupMenuChanged callback);
+    void setPopupMenuChangedCallback(PopupMenuChanged callback);
 
-        private:
-            enum {
-                MiddleDown = 1,
-                MiddleProcessed = 2
-            };
-
-            void initIcon();
-
-            void notify() {
-                if (monitorsChanged) {
-                    monitorsChanged();
-                }
-            }
-
-            static LRESULT CALLBACK windowProc(
-                HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
-            HWND hwnd;
-            int middleFlags;
-            NOTIFYICONDATA iconData;
-            MonitorsChanged monitorsChanged;
-            PopupMenuChanged popupMenuChanged;
+  private:
+    enum
+    {
+      MiddleDown      = 1,
+      MiddleProcessed = 2
     };
-}
+
+    void initIcon();
+
+    void notify()
+    {
+      if (monitorsChanged)
+        {
+          monitorsChanged();
+        }
+    }
+
+    static LRESULT CALLBACK windowProc(
+        HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+    HWND hwnd;
+    int middleFlags;
+    NOTIFYICONDATA iconData;
+    MonitorsChanged monitorsChanged;
+    PopupMenuChanged popupMenuChanged;
+  };
+} // namespace dimmer

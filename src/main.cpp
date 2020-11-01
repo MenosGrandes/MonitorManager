@@ -32,81 +32,90 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-#include <Windows.h>
-#include <Commctrl.h>
-#include <string>
-#include <vector>
-#include <map>
-#include <memory>
-
 #include "Monitor.h"
 #include "Overlay.h"
 #include "TrayMenu.h"
 #include "Util.h"
 
-#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#include <Windows.h>
+#include <commctrl.h>
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
+
+#pragma comment(linker, \
+    "/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 
 using OverlayPtr = std::shared_ptr<dimmer::Overlay>;
-using Overlays = std::map<std::wstring, OverlayPtr>;
+using Overlays   = std::map<std::wstring, OverlayPtr>;
 static Overlays overlays;
 static std::vector<dimmer::Monitor> monitors;
 
-static void updateOverlays(HINSTANCE instance) {
-    monitors = dimmer::queryMonitors();
+static void updateOverlays(HINSTANCE instance)
+{
+  monitors = dimmer::queryMonitors();
 
-    Overlays old;
-    std::swap(overlays, old);
+  Overlays old;
+  std::swap(overlays, old);
 
-    if (dimmer::isDimmerEnabled()) {
-        for (auto monitor : monitors) {
-            auto id = monitor.getId();
-            auto it = old.find(monitor.getId());
+  if (dimmer::isDimmerEnabled())
+    {
+      for (auto monitor : monitors)
+        {
+          auto id = monitor.getId();
+          auto it = old.find(monitor.getId());
 
-            OverlayPtr overlay;
-            if (it != old.end()) {
-                overlay = it->second;
-                overlay->update(monitor);
+          OverlayPtr overlay;
+          if (it != old.end())
+            {
+              overlay = it->second;
+              overlay->update(monitor);
             }
-            else {
-                overlay = std::make_shared<dimmer::Overlay>(instance, monitor);
+          else
+            {
+              overlay = std::make_shared<dimmer::Overlay>(instance, monitor);
             }
 
-            overlays[id] = overlay;
+          overlays[id] = overlay;
         }
     }
 }
 
-int CALLBACK wWinMain(HINSTANCE instance, HINSTANCE prev, LPWSTR args, int showType) {
-    InitCommonControlsEx(nullptr);
+int CALLBACK wWinMain(HINSTANCE instance, HINSTANCE prev, LPWSTR args, int showType)
+{
+  InitCommonControlsEx(nullptr);
 
-    dimmer::loadConfig();
+  dimmer::loadConfig();
 
-    dimmer::TrayMenu trayMenu(instance, [instance]() {
-        updateOverlays(instance);
-    });
+  dimmer::TrayMenu trayMenu(
+      instance, [instance]() { updateOverlays(instance); });
 
-    trayMenu.setPopupMenuChangedCallback([](bool visible) {
-        for (auto overlay : overlays) {
-            if (visible) {
-                overlay.second->killTimer();
-            }
-            else {
-                overlay.second->startTimer();
-            }
-        }
-    });
+  trayMenu.setPopupMenuChangedCallback([](bool visible) {
+    for (auto overlay : overlays)
+      {
+        if (visible)
+          {
+            overlay.second->killTimer();
+          }
+        else
+          {
+            overlay.second->startTimer();
+          }
+      }
+  });
 
-    MSG msg = {};
-    while (GetMessage(&msg, nullptr, 0, 0)) {
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
+  MSG msg = {};
+  while (GetMessage(&msg, nullptr, 0, 0))
+    {
+      TranslateMessage(&msg);
+      DispatchMessage(&msg);
     }
 
-    dimmer::saveConfig();
+  dimmer::saveConfig();
 
-    monitors.clear();
-    overlays.clear();
+  monitors.clear();
+  overlays.clear();
 
-    return 0;
+  return 0;
 }
-

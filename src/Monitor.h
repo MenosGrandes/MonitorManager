@@ -35,48 +35,54 @@
 #pragma once
 
 #include <Windows.h>
-#include <vector>
 #include <string>
+#include <vector>
 
-namespace dimmer {
-    struct Monitor {
-        Monitor(HMONITOR handle, int index) {
-            this->handle = handle;
-            this->index = index;
-            this->info = {};
-            this->info.cbSize = sizeof(MONITORINFOEX);
-            GetMonitorInfo(handle, &this->info);
+namespace dimmer
+{
+  struct Monitor
+  {
+    Monitor(HMONITOR handle, int index)
+    {
+      this->handle      = handle;
+      this->index       = index;
+      this->info        = {};
+      this->info.cbSize = sizeof(MONITORINFOEX);
+      GetMonitorInfo(handle, &this->info);
+    }
+
+    std::wstring getId() const
+    {
+      return std::wstring(this->info.szDevice) + L"-" + std::to_wstring(index);
+    }
+
+    std::wstring getName() const
+    {
+      std::wstring name = this->info.szDevice;
+      auto pos          = name.find(L"\\\\.\\");
+      if (pos == 0)
+        {
+          name = name.substr(4);
         }
+      return name;
+    }
 
-        std::wstring getId() const {
-            return std::wstring(this->info.szDevice) + L"-" + std::to_wstring(index);
-        }
+    int index;
+    HMONITOR handle;
+    MONITORINFOEX info;
+  };
 
-        std::wstring getName() const {
-            std::wstring name = this->info.szDevice;
-            auto pos = name.find(L"\\\\.\\");
-            if (pos == 0) {
-                name = name.substr(4);
-            }
-            return name;
-        }
-
-        int index;
-        HMONITOR handle;
-        MONITORINFOEX info;
-    };
-
-    extern std::vector<Monitor> queryMonitors();
-    extern float getMonitorOpacity(Monitor& monitor);
-    extern void setMonitorOpacity(Monitor& monitor, float opacity);
-    extern int getMonitorTemperature(Monitor& monitor);
-    extern void setMonitorTemperature(Monitor& monitor, int temperature);
-    extern bool isMonitorEnabled(Monitor& monitor);
-    extern void setMonitorEnabled(Monitor& monitor, bool enabled);
-    extern bool isPollingEnabled();
-    extern void setPollingEnabled(bool enabled);
-    extern bool isDimmerEnabled();
-    extern void setDimmerEnabled(bool enabled);
-    extern void loadConfig();
-    extern void saveConfig();
-}
+  extern std::vector<Monitor> queryMonitors();
+  extern float getMonitorOpacity(Monitor &monitor);
+  extern void setMonitorOpacity(Monitor &monitor, float opacity);
+  extern int getMonitorTemperature(Monitor &monitor);
+  extern void setMonitorTemperature(Monitor &monitor, int temperature);
+  extern bool isMonitorEnabled(Monitor &monitor);
+  extern void setMonitorEnabled(Monitor &monitor, bool enabled);
+  extern bool isPollingEnabled();
+  extern void setPollingEnabled(bool enabled);
+  extern bool isDimmerEnabled();
+  extern void setDimmerEnabled(bool enabled);
+  extern void loadConfig();
+  extern void saveConfig();
+} // namespace dimmer
