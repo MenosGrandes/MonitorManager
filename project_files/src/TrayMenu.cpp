@@ -221,7 +221,7 @@ void TrayMenu::initIcon()
   this->iconData.hIcon            = trayIcon;
 
   static const std::wstring title =
-      std::wstring(L"dimmer") + L" - " + std::wstring(version);
+      std::wstring(L"MonitorManager") + L" - " + std::wstring(version);
 
   ::wcscpy_s(this->iconData.szTip, 255, title.c_str());
 
